@@ -105,10 +105,10 @@ case "$MONICA_ROLE" in
         ;;
     web)
         # Upstream's entrypoint takes its migration branch when its first
-        # argument starts with "apache", so passing apache-boot gets the
-        # schema updated and the Passport keys created first; apache-boot then
+        # argument starts with "apache", so passing apache-boot.sh gets the
+        # schema updated and the Passport keys created first; that script then
         # creates the first account and execs Apache.
-        exec /usr/local/bin/entrypoint.sh apache-boot
+        exec /usr/local/bin/entrypoint.sh apache-boot.sh
         ;;
     *)
         log "FATAL: unknown MONICA_ROLE '${MONICA_ROLE}' (expected web, cron or queue)."
