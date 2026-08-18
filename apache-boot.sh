@@ -27,10 +27,13 @@ if [ -n "${MONICA_ADMIN_EMAIL:-}" ] && [ -n "${MONICA_ADMIN_PASSWORD:-}" ]; then
 
     if [ "$users" = "0" ]; then
         log "no accounts yet — creating the first one for ${MONICA_ADMIN_EMAIL}"
-        # APP_ENV=local for this one command: account:create uses Laravel's
-        # ConfirmableTrait but declares no --force option, so in a production
-        # environment it prompts, and a container has nothing to answer with —
-        # it would report success having created nothing.
+        # account:create uses Laravel's ConfirmableTrait but declares no --force
+        # option, so in a production environment it asks a question no container
+        # can answer and cancels itself — reporting success having created
+        # nothing. APP_ENV=local answers that guard, but only once the config
+        # cache the stock entrypoint just wrote is out of the way: a cached
+        # config makes every env() read inert, this one included.
+        php artisan config:clear
         APP_ENV=local php artisan account:create \
             --email="${MONICA_ADMIN_EMAIL}" \
             --password="${MONICA_ADMIN_PASSWORD}" \
@@ -38,6 +41,7 @@ if [ -n "${MONICA_ADMIN_EMAIL:-}" ] && [ -n "${MONICA_ADMIN_PASSWORD:-}" ]; then
             --lastname="${MONICA_ADMIN_LASTNAME:-Admin}"
         # account:create makes an account owner, not an instance administrator.
         php artisan monica:admin --email="${MONICA_ADMIN_EMAIL}" --force
+        php artisan config:cache
     elif [ "$users" = "-1" ]; then
         log "WARNING: could not read the users table; skipping account bootstrap."
     else
